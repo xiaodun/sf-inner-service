@@ -35,6 +35,96 @@ exports.start = function (config) {
       } else {
         command = urlElementsArr[3].slice(0, paramsPos);
       }
+      //对播放器应用的额外处理
+      let external = {};
+      let pathList = ["c://sf-mobile-web", "/player", "/system", "/movie"];
+      let userPathList = ["c://sf-mobile-web", "/player", "/user", "/movie"];
+      if (appName === "player" && dataName === "player") {
+        let path = pathList.join("");
+        let userPath = userPathList.join("");
+        external.rootPath = path;
+        if (command === "get") {
+          //创建目录
+          let moveList = [];
+          createFloder(pathList);
+          createFloder(userPathList);
+          //读取文件夹下的视频
+          let userFiles = file_os.readdirSync(userPath);
+          userFiles.forEach(filename => {
+            let filedir = userPath + "/" + filename;
+            if (file_os.existsSync(filedir)) {
+              //防止读取到删除的文件导致报错
+              let stats = file_os.statSync(filedir);
+              if (stats.isFile()) {
+                moveList.push({
+                  name: filename
+                });
+              }
+            }
+          });
+
+          let files = file_os.readdirSync(path);
+
+          files.forEach(filename => {
+            let filedir = path + "/" + filename;
+            let stats = file_os.statSync(filedir);
+            if (stats.isFile()) {
+              moveList.push({
+                name: filename,
+                id: filename
+              });
+            }
+          });
+
+          external.moveList = moveList;
+        } else {
+          //因为无法预知视频的名字  所以这里无法加入详细的判断
+          //获取视频
+          if (command.includes(".")) {
+            var filePath = path + "/" + decodeURIComponent(command);
+            if (!file_os.existsSync(filePath)) {
+              //去掉后缀
+              let fileName = decodeURIComponent(command);
+              let index = fileName.lastIndexOf(".");
+              fileName = fileName.substring(0, index);
+              //到用户上传的文件夹下找
+              filePath = userPath + "/" + fileName;
+            }
+            console.log(filePath);
+            file_os.stat(filePath, function (error, stats) {
+              if (error) {
+                response.end(error);
+              }
+              var range = request.headers.range;
+              if (!range) {
+                // 416 Wrong range
+                return response.sendStatus(416);
+              }
+              var positions = range.replace(/bytes=/, "").split("-");
+              var start = parseInt(positions[0], 10);
+              var total = stats.size;
+              var end = positions[1] ? parseInt(positions[1], 10) : total - 1;
+              var chunksize = end - start + 1;
+
+              response.writeHead(206, {
+                "Content-Range": "bytes " + start + "-" + end + "/" + total,
+                "Accept-Ranges": "bytes",
+                "Content-Length": chunksize
+              });
+
+              var stream = file_os
+                .createReadStream(filePath, { start: start, end: end })
+                .on("open", function () {
+                  stream.pipe(response);
+                })
+                .on("error", function (err) {
+                  response.end(err);
+                });
+            });
+            return;
+          }
+        }
+      }
 
       //创建结构
       let floderPathArr = (config.abspath
@@ -96,8 +186,15 @@ exports.start = function (config) {
           };
           var form = new formidable_os.IncomingForm();
           form.maxFileSize = 5 * 1024 * 1024 * 1024;
-          form.uploadDir = process.cwd() + "/" + rootFloder.path;
-
+          if (
+            appName === "player" &&
+            dataName === "player" &&
+            command === "upload"
+          ) {
+            form.uploadDir = userPathList.join("");
+          } else {
+            form.uploadDir = process.cwd() + "/" + rootFloder.path;
+          }
           form.parse(request, function (error, fileds, files) {
             if (error) {
               // 超过指定大小时的报错
@@ -131,7 +228,7 @@ exports.start = function (config) {
         var params = url_os.parse(request.url, true).query;
         executeCommand(params);
       }
-      function createFloder(List) {
+      function createFloder(list) {
         try {
           let path = "";
           list.forEach(el => {
@@ -155,9 +252,14 @@ exports.start = function (config) {
           // var result = eval(new String(file_os.readFileSync(rootFloder.commandPath)))(cloneData,params);
           var result = eval(
             file_os.readFileSync(rootFloder.commandPath, "utf-8")
-          )(cloneData, params);
+          )(cloneData, params, external);
           if (result.isDelete) {
-            let path = rootFloder.path + "/" + result.file.flag;
+            let path;
+            if (appName === "player" && dataName === "player") {
+              path = userPathList.join("") + "/" + result.id;
+            } else {
+              path = rootFloder.path + "/" + result.file.flag;
+            }
             file_os.unlinkSync(path);
           }
 
@@ -183,14 +285,43 @@ exports.start = function (config) {
 
           if (result.isDownload) {
             // 文件下载;
-            let path = rootFloder.path + "/" + result.file.flag;
-            let file = file_os.createReadStream(path);
+            let path;
+
+            if (appName === "player" && dataName === "player") {
+              if (result.isUser === true) {
+                //用户上传
+                path = userPathList.join("") + "/" + result.id;
+              } else {
+                //系统
+                path = pathList.join("") + "/" + result.id;
+              }
+            } else {
+              path = rootFloder.path + "/" + result.file.flag;
+            }
+            console.log(path, result.file);
+            let readStream = file_os.ReadStream(path);
             response.writeHead(200, {
               "Content-Type": "application/octet-stream",
-              "Content-Disposition":
-                `attachment; filename=` + encodeURIComponent(result.file.name)
+              "Accept-Ranges": "bytes"
             });
-            file.pipe(response);
+            readStream.on("close", function () {
+              response.end();
+            });
+            readStream.pipe(response);
+          } else if (result.isPlayer) {
+            //播放文件
+            if (dataName === "player") {
+              let path = external.rootPath + "/" + result.file.name;
+              let readStream = file_os.ReadStream(path);
+              response.writeHead(200, {
+                "Content-Type": "application/octet-stream",
+                "Accept-Ranges": "bytes"
+              });
+              readStream.on("close", function () {
+                response.end();
+              });
+              readStream.pipe(response);
+            }
           } else {
             //返回结果
             response.writeHead(result.response.code, {

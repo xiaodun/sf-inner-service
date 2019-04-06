@@ -4,7 +4,7 @@
   "description": "为个人的演示项目提供一个简单的内置服务器",
   "main": "index.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "node test/test.js"
   },
   "author": "xiaodun",
   "license": "ISC",
