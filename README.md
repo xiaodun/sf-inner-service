@@ -68,7 +68,7 @@ argData word.json的JS对象形式,argParams是对ajax参数的解析，支持ge
 ## 上传的使用
   
   上传时argParams的files参数会记录用户上传文件的数据,文件就保存在word.json 同级。
-  files提供数据有一下信息
+  files提供数据有以下信息
   
         "name": "i18n的使用.zip",
         "type": "application/x-zip-compressed",
