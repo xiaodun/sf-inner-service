@@ -1,5 +1,13 @@
 
-为个人演示项目提供一个简易的内置服务器
+为个人演示项目提供一个简易的内置服务器。
+
+支持对数据的任意操作,自由程度高。
+
+支持文件的上传、下载、删除。
+
+支持对视频的二进制播放,可以边下边播。
+
+支持生命周期函数挂载自定义逻辑。
 
 # 安装
 
@@ -138,9 +146,63 @@ argData word.json的JS对象形式,argParams是对ajax参数的解析，支持ge
       };
     }) ();
 
+## lifeCycle.js
 
-### 总结
+   每个应用可以创建一个lifeCycle.js,结构以及支持的生命周期方法如下:
+   
+        /* external 在不同生命周期以及主程序之间共享数据
+         * result 执行完命令所代表的js文件后返回的结果
+         */
+        (function() {
+          return function() {
+            return {
+            createFloder: function(createFloder, external) {
+                //创建程序需要的文件夹
+                let pathList = ["c://sf-mobile-web", "/player", "/system", "/movie"];
+                let userPathList = ["c://sf-mobile-web", "/player", "/user", "/movie"];
+                createFloder(pathList);
+                createFloder(userPathList);
+                
+            },
+            //command 命令的名字
+            dealCommand(command, external) {
+                
+                //对不同命令的额外处理                              
+                if (command.includes(".")) {
+                    //是静态文件
+                    //去掉后缀
+                    let fileName = decodeURIComponent(command);
+                    let index = fileName.lastIndexOf(".");
+                    fileName = fileName.substring(0, index);
+                    return {
+                        type: "video",//目前只支持video,
+                        filePath:"",//文件的位置
+                    };
+                }
+               
+            },
+            getUploadPath(external) {
+                //自定义上传文件的路径
+                return "";
+            },
+            getDeleteFilePath(external, result) {
+                
+                //自定义删除文件路径
+                return "";
+            },
+            getDownloadFilePath(external, result) {
+                //自定义下载文件路径
+                return "";
+            }
+            };
 
-sf-mobile-web 手脑通相关功能是以破环式的方式实现的，不可通用，可以用命令模式重构，不是目前主要任务。
+            
+         };
+        })();
 
-详细参照可以看sf-pc-web上的使用
+# 总结
+
+数据的操作可参见sf-pc-web
+视频的相关处理可参见sf-mobile-web
+
+项目本身是需要开发人员自定义较多逻辑的，尤其是文件的上传于下载以及lifeCycle.js的使用，后续计划通过文章详细的说明工作流程。
