@@ -62,7 +62,7 @@ exports.start = function(config) {
       if (!file_os.existsSync(rootFloder.dataPath)) {
         file_os.writeFileSync(rootFloder.dataPath, "");
       }
-      rootFloder.commandPath = rootFloder.path + "/" + command + ".js";
+
       //生命周期文件
       rootFloder.lifeCyclePath = rootFloder.path + "/lifeCycle.js";
 
@@ -94,9 +94,6 @@ exports.start = function(config) {
           }
       }
   })()`;
-      if (!file_os.existsSync(rootFloder.commandPath)) {
-        file_os.writeFileSync(rootFloder.commandPath, commandTemplate);
-      }
 
       //对不同命令的额外处理
       let commandResults =
@@ -139,6 +136,12 @@ exports.start = function(config) {
           //播放静态资源则无需执行后续的操作
           return;
         }
+      }
+
+      //创建命令文件  此处代码需要在dealCommand生命周期钩子后执行，防止在处理静态资源的时候额外的创建.js
+      rootFloder.commandPath = rootFloder.path + "/" + command + ".js";
+      if (!file_os.existsSync(rootFloder.commandPath)) {
+        file_os.writeFileSync(rootFloder.commandPath, commandTemplate);
       }
       //解析参数
 
