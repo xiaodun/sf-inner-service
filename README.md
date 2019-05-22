@@ -319,4 +319,4 @@ argData word.json的JS对象形式,argParams是对ajax参数的解析，支持ge
 create-react-app的使用案例sf-react-lab
 
 
-项目本身是需要开发人员自定义较多逻辑的，尤其是文件的上传于下载以及lifeCycle.js的使用，后续计划通过文章详细的说明工作流程。
+项目本身是需要开发人员自定义较多逻辑的，尤其是文件的上传与下载以及lifeCycle.js的使用，后续计划通过文章详细的说明工作流程。
