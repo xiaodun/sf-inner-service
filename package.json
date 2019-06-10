@@ -1,6 +1,6 @@
 {
   "name": "sf-inner-service",
-  "version": "1.2.1",
+  "version": "1.2.2",
   "description": "为个人的演示项目提供一个简单的内置服务器",
   "repository": {
     "type": "git",

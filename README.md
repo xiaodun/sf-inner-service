@@ -47,6 +47,116 @@
    package.json 的start 命令改为如下
    
       "start": "start-service.bat && npm run dev"
+ 
+## 在vue-cli 配置代理
+   
+   config/index.js
+   
+   新增
+   
+    const path = require("path");
+    var os = require("os");
+    var IPv4 = "localhost";
+    var readFile = require("fs");
+    let network = os.networkInterfaces();
+
+    //动态的获取本机IP地址
+    for (let key in network) {
+      let env = network[key];
+      for (var i = 0; i < env.length; i++) {
+        if (env[i].family == "IPv4" && env[i].address != "127.0.0.1") {
+          IPv4 = env[i].address;
+        }
+      }
+    }
+    //获取内置服务器的配置
+    let bultinService = {
+      path: "./service/app/config.json"
+    };
+    bultinService.config = JSON.parse(
+      readFile.readFileSync(bultinService.path, "utf-8")
+    );
+    
+   module.exports
+   
+   新增
+   
+        proxyTable: {
+          ["/" + bultinService.config.prefix]: {
+            target: `http://${IPv4}:${bultinService.config.port}/`
+          }
+        }
+        
+   修改
+   
+        host: IPv4
+        
+
+## create-react-app 配置代理
+
+   src下新增env.js
+   
+    var os = require("os");
+    var IPv4 = "localhost";
+    let network = os.networkInterfaces();
+
+    //动态的获取本机IP地址
+    for (let key in network) {
+      let env = network[key];
+      for (var i = 0; i < env.length; i++) {
+        if (env[i].family === "IPv4" && env[i].address !== "127.0.0.1") {
+          IPv4 = env[i].address;
+        }
+      }
+    }
+    module.exports.IPv4 = IPv4;
+    
+   src下新增setupProxy.js
+   
+    const proxy = require("http-proxy-middleware");
+    var readFile = require("fs");
+
+    const { IPv4 } = require("./env");
+    //获取内置服务器的配置
+    let bultinService = {
+      path: "./service/app/config.json"
+    };
+    bultinService.config = JSON.parse(
+      readFile.readFileSync(bultinService.path, "utf-8")
+    );
+    module.exports = function(app) {
+      app.use(
+        proxy(`/${bultinService.config.prefix}/**`, {
+          target: `http://${IPv4}:${bultinService.config.port}/`,
+          changeOrigin: true
+        })
+      );
+    };
+    
+   src下serviceWorker.js  不加则无法调试
+   
+   新增
+   
+    const { IPv4 } = require("./env");
+  
+   修改
+   
+    const isLocalhost = Boolean(
+      window.location.hostname === IPv4 ||
+       
+    );
+    
+  scripts/start.js
+  
+  新增
+  
+     const { IPv4 } = require("../src/env");
+  
+  修改
+  
+     const HOST = IPv4;
+
+
       
 # 如何编写
 
@@ -203,6 +313,7 @@ argData word.json的JS对象形式,argParams是对ajax参数的解析，支持ge
 # 总结
 
 数据的操作可参见sf-pc-web
+
 视频的相关处理可参见sf-mobile-web
 
-项目本身是需要开发人员自定义较多逻辑的，尤其是文件的上传于下载以及lifeCycle.js的使用，后续计划通过文章详细的说明工作流程。
+create-react-app的使用案例sf-react-lab
