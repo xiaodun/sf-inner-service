@@ -12,6 +12,161 @@
 # 安装
 
     npm install --save-dev sf-inner-service
+
+# 如何编写
+
+    http://172.16.209.105:8080/api/personal/word/get
+
+  /api/personal/word/get,前缀/应用名/数据名/命令名，会创建api=>personal=>word 文件结构,以及word.json 和 get.js。
+所有的命令都是围绕word.json进行操作。
+
+  至少要有以上4个部分组成,可以在应用名和数据名之间添加任意自定义模块名，例如 /api/personal/module1/module2/word/get，但是为了不同的命令可以操作同一份数据，需要保持长度的一致,例如/api/personal/module1/module2/word/remove。
+  
+  命令模板如下:
+  
+    (function () {
+      return function (argData, argParams) {
+        return {
+        isWrite: false, //是否覆盖数据
+        //data:argData,//需要存储的新数据
+        response: {
+          //返回的数据
+          code: 200,
+          data: {
+          },
+        },
+      };
+     };
+    })();
+    
+argData word.json的JS对象形式,argParams是对ajax参数的解析，支持get、post两种方式。
+
+## 上传的使用
+  
+  上传时argParams的files参数会记录用户上传文件的数据,文件就保存在word.json 同级。
+  files提供数据有以下信息
+  
+        "name": "i18n的使用.zip",
+        "type": "application/x-zip-compressed",
+        "flag": "upload_14055a151e73762ed1b41eead641cbc0",
+  
+  需要全部存储起来，upload_14055a151e73762ed1b41eead641cbc0是formidablechan插件生成的文件标识。
+
+## 删除上传的文件
+         
+  通过参数删除argData中的数据并覆盖,同时在返回数据中,告知需要删除这个文件，示例如下
+  
+    (function () {
+      return function (argData, argParams) {
+        //argData 数据的副本
+        let file;
+        let index = argData.findIndex ((el, index, arr) => {
+          if (el.id === argParams.id) {
+            file = el;
+            return true;
+          }
+        });
+        argData.splice (index, 1);
+        return {
+          isWrite: true, //是否覆盖数据
+          data: argData, //需要存储的新数据
+          isDelete: true,
+          file,
+          response: {
+            //返回的数据
+            code: 200,
+            data: {},
+          },
+        };
+      };
+    }) ();
+
+## 下载文件
+    
+  通过参数在argData中找到文件的信息，并在返回数据中告知需要下载文件，模板如下
+  
+       (function () {
+      return function (argData, argParams, argEnv) {
+        //argData 数据的副本
+        let id = argParams.id;
+        let file = '';
+        argData.some ((el, index, arr) => {
+          if (el.id === id) {
+            file = {
+              flag: el.flag,
+              name: el.name,
+              type:el.type
+            };
+            return true;
+          }
+        });
+        return {
+          isWrite: false, //是否覆盖数据
+          //data:argData,//需要存储的新数据
+          isDownload: true,
+          file,
+          response: {
+            //返回的数据
+            code: 200,
+            data: {},
+          },
+        };
+      };
+    }) ();
+
+## lifeCycle.js
+
+   每个应用可以创建一个lifeCycle.js,结构以及支持的生命周期方法如下:
+   
+        /* external 在不同生命周期以及主程序之间共享数据
+         * result 执行完命令所代表的js文件后返回的结果
+         */
+        (function() {
+          return function() {
+            return {
+            createFloder: function(createFloder, external) {
+                //创建程序需要的文件夹
+                let pathList = ["c://sf-mobile-web", "/player", "/system", "/movie"];
+                let userPathList = ["c://sf-mobile-web", "/player", "/user", "/movie"];
+                createFloder(pathList);
+                createFloder(userPathList);
+                
+            },
+            //command 命令的名字
+            dealCommand(command, external) {
+                
+                //对不同命令的额外处理                              
+                if (command.includes(".")) {
+                    //是静态文件
+                    //去掉后缀
+                    let fileName = decodeURIComponent(command);
+                    let index = fileName.lastIndexOf(".");
+                    fileName = fileName.substring(0, index);
+                    return {
+                        type: "video",//目前只支持video,
+                        filePath:"",//文件的位置
+                    };
+                }
+               
+            },
+            getUploadPath(external) {
+                //自定义上传文件的路径
+                return "";
+            },
+            getDeleteFilePath(external, result) {
+                
+                //自定义删除文件路径
+                return "";
+            },
+            getDownloadFilePath(external, result) {
+                //自定义下载文件路径
+                return "";
+            }
+            };
+
+            
+         };
+        })();
     
 # 在项目中使用
 
@@ -158,157 +313,7 @@
 
 
       
-# 如何编写
 
-    http://172.16.209.105:8080/api/personal/word/get
-
-  服务器只接受如下结构/api/personal/word/get,前缀/应用名/数据名/命令名，会创建api=>personal=>word 文件结构,以及word.json 和 get.js。
-所有的命令都是围绕word.json进行操作。
-  命令模板如下:
-  
-    (function () {
-      return function (argData, argParams) {
-        return {
-        isWrite: false, //是否覆盖数据
-        //data:argData,//需要存储的新数据
-        response: {
-          //返回的数据
-          code: 200,
-          data: {
-          },
-        },
-      };
-     };
-    })();
-    
-argData word.json的JS对象形式,argParams是对ajax参数的解析，支持get、post两种方式。
-
-## 上传的使用
-  
-  上传时argParams的files参数会记录用户上传文件的数据,文件就保存在word.json 同级。
-  files提供数据有以下信息
-  
-        "name": "i18n的使用.zip",
-        "type": "application/x-zip-compressed",
-        "flag": "upload_14055a151e73762ed1b41eead641cbc0",
-  
-  需要全部存储起来，upload_14055a151e73762ed1b41eead641cbc0是formidablechan插件生成的文件标识。
-
-## 删除上传的文件
-         
-  通过参数删除argData中的数据并覆盖,同时在返回数据中,告知需要删除这个文件，示例如下
-  
-    (function () {
-      return function (argData, argParams) {
-        //argData 数据的副本
-        let file;
-        let index = argData.findIndex ((el, index, arr) => {
-          if (el.id === argParams.id) {
-            file = el;
-            return true;
-          }
-        });
-        argData.splice (index, 1);
-        return {
-          isWrite: true, //是否覆盖数据
-          data: argData, //需要存储的新数据
-          isDelete: true,
-          file,
-          response: {
-            //返回的数据
-            code: 200,
-            data: {},
-          },
-        };
-      };
-    }) ();
-
-## 下载文件
-    
-  通过参数在argData中找到文件的信息，并在返回数据中告知需要下载文件，模板如下
-  
-       (function () {
-      return function (argData, argParams, argEnv) {
-        //argData 数据的副本
-        let id = argParams.id;
-        let file = '';
-        argData.some ((el, index, arr) => {
-          if (el.id === id) {
-            file = {
-              flag: el.flag,
-              name: el.name,
-              type:el.type
-            };
-            return true;
-          }
-        });
-        return {
-          isWrite: false, //是否覆盖数据
-          //data:argData,//需要存储的新数据
-          isDownload: true,
-          file,
-          response: {
-            //返回的数据
-            code: 200,
-            data: {},
-          },
-        };
-      };
-    }) ();
-
-## lifeCycle.js
-
-   每个应用可以创建一个lifeCycle.js,结构以及支持的生命周期方法如下:
-   
-        /* external 在不同生命周期以及主程序之间共享数据
-         * result 执行完命令所代表的js文件后返回的结果
-         */
-        (function() {
-          return function() {
-            return {
-            createFloder: function(createFloder, external) {
-                //创建程序需要的文件夹
-                let pathList = ["c://sf-mobile-web", "/player", "/system", "/movie"];
-                let userPathList = ["c://sf-mobile-web", "/player", "/user", "/movie"];
-                createFloder(pathList);
-                createFloder(userPathList);
-                
-            },
-            //command 命令的名字
-            dealCommand(command, external) {
-                
-                //对不同命令的额外处理                              
-                if (command.includes(".")) {
-                    //是静态文件
-                    //去掉后缀
-                    let fileName = decodeURIComponent(command);
-                    let index = fileName.lastIndexOf(".");
-                    fileName = fileName.substring(0, index);
-                    return {
-                        type: "video",//目前只支持video,
-                        filePath:"",//文件的位置
-                    };
-                }
-               
-            },
-            getUploadPath(external) {
-                //自定义上传文件的路径
-                return "";
-            },
-            getDeleteFilePath(external, result) {
-                
-                //自定义删除文件路径
-                return "";
-            },
-            getDownloadFilePath(external, result) {
-                //自定义下载文件路径
-                return "";
-            }
-            };
-
-            
-         };
-        })();
 
 # 总结
 
