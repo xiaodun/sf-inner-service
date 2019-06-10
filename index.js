@@ -27,26 +27,40 @@ exports.start = function(config) {
       console.log(`${IPv4}:${config.port}${request.url}`);
       let prefix = urlElementsArr[0],
         appName = urlElementsArr[1],
-        dataName = urlElementsArr[2],
+        moduleNames = urlElementsArr.slice(2, urlElementsArr.length - 2),
+        dataName = urlElementsArr[urlElementsArr.length - 2],
         command;
-      let paramsPos = urlElementsArr[3].indexOf("?");
+      let paramsPos = urlElementsArr[urlElementsArr.length - 1].indexOf("?");
       if (paramsPos == -1) {
-        command = urlElementsArr[3];
+        command = urlElementsArr[urlElementsArr.length - 1];
       } else {
-        command = urlElementsArr[3].slice(0, paramsPos);
+        command = urlElementsArr[urlElementsArr.length - 1].slice(0, paramsPos);
       }
 
+      console.log(moduleNames);
       //视频播放
       let external = {};
 
       let floderPathArr = (config.abspath
         ? config.abspath.split("/")
         : []
-      ).concat([config.dataFloderName, prefix, appName, dataName]);
+      ).concat([
+        config.dataFloderName,
+        prefix,
+        appName,
+        ...moduleNames,
+        dataName
+      ]);
       var rootFloder = {
         path:
           (config.abspath ? config.abspath + "/" : "") +
-          [config.dataFloderName, prefix, appName, dataName].join("/")
+          [
+            config.dataFloderName,
+            prefix,
+            appName,
+            ...moduleNames,
+            dataName
+          ].join("/")
       };
 
       let countPath = "";
