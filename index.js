@@ -3,14 +3,14 @@
  程序会建立 自定义前缀/应用名/数据名 的文件夹结构 然后为每一个命令生成一个js文件
  支持get和post方式
 */
-exports.start = function(config) {
+exports.start = function (config) {
   var http_os = require("http");
   var file_os = require("fs");
   var url_os = require("url");
   var IPv4 = "localhost";
   var os = require("os");
   var formidable_os = require("formidable");
-
+  var WebSocketServer = require('ws').Server
   //动态的获取本机IP地址
   let network = os.networkInterfaces();
   for (let key in network) {
@@ -21,7 +21,49 @@ exports.start = function(config) {
       }
     }
   }
-  var server = http_os.createServer(function(request, response) {
+  if (config.isOpenWebSocket) {
+    //开启了webSocket
+    if (config.webSocket && config.webSocket.port == undefined) {
+      console.log('没有配置webSocket端口');
+      return;
+    }
+    try {
+      var wss = new WebSocketServer({ port: config.webSocket.port });
+      console.log(`webSocket is running ${config.webSocket.port}`);
+      try {
+        //读取websocket.js 没有则创建
+        let websocketPath = config.dataFloderName + "/websocket.js"
+        if (!file_os.existsSync(websocketPath)) {
+          file_os.writeFileSync(websocketPath, `(function(){
+        return function(argData){
+            let senData = {}
+            return senData;
+        }
+    })()`);
+        }
+        let websocketjs = file_os.readFileSync(websocketPath, "utf-8")
+        wss.on('connection', function (ws) {
+
+
+          ws.on('message', function (message) {
+            // 广播消息
+            let result = eval(websocketjs)(JSON.parse(message));
+
+            ws.send(JSON.stringify(result));
+          })
+        });
+
+      } catch (error) {
+        console.log(error);
+      }
+
+    } catch (error) {
+      throw new Error(error);
+    }
+
+
+  };
+  var server = http_os.createServer(function (request, response) {
     try {
       var urlElementsArr = request.url.slice(1, request.url.length).split("/");
       console.log(`${IPv4}:${config.port}${request.url}`);
@@ -37,7 +79,7 @@ exports.start = function(config) {
         command = urlElementsArr[urlElementsArr.length - 1].slice(0, paramsPos);
       }
 
-      console.log(moduleNames);
+
       //视频播放
       let external = {};
 
@@ -118,7 +160,7 @@ exports.start = function(config) {
         if (commandResults.type === "video") {
           //对视频文件的统一处理
           let { filePath } = commandResults;
-          file_os.stat(filePath, function(error, stats) {
+          file_os.stat(filePath, function (error, stats) {
             if (error) {
               response.end(error);
             }
@@ -140,10 +182,10 @@ exports.start = function(config) {
 
             var stream = file_os
               .createReadStream(filePath, { start: start, end: end })
-              .on("open", function() {
+              .on("open", function () {
                 stream.pipe(response);
               })
-              .on("error", function(err) {
+              .on("error", function (err) {
                 response.end(err);
               });
           });
@@ -179,12 +221,12 @@ exports.start = function(config) {
           } else {
             form.uploadDir = process.cwd() + "/" + rootFloder.path;
           }
-          form.parse(request, function(error, fileds, files) {
+          form.parse(request, function (error, fileds, files) {
             if (error) {
               // 超过指定大小时的报错
             }
           });
-          form.on("file", function(name, file) {
+          form.on("file", function (name, file) {
             //写入文件名和路径
             postData.files.push({
               name: file.name,
@@ -192,7 +234,7 @@ exports.start = function(config) {
               flag: file.path.substr(file.path.lastIndexOf("\\") + 1)
             });
           });
-          form.on("end", function() {
+          form.on("end", function () {
             executeCommand(postData);
           });
         } else {
@@ -201,10 +243,10 @@ exports.start = function(config) {
            */
           var postData = "";
 
-          request.addListener("data", function(data) {
+          request.addListener("data", function (data) {
             postData += data;
           });
-          request.addListener("end", function() {
+          request.addListener("end", function () {
             executeCommand(JSON.parse(postData || null));
           });
         }
@@ -281,7 +323,7 @@ exports.start = function(config) {
               "Content-Type": "application/octet-stream",
               "Accept-Ranges": "bytes"
             });
-            readStream.on("close", function() {
+            readStream.on("close", function () {
               response.end();
             });
             readStream.pipe(response);
@@ -309,10 +351,10 @@ exports.start = function(config) {
     response.end(error.stack);
   }
   server.setTimeout(0);
-  server.listen(config.port, function() {
-    console.log("service is running");
+  server.listen(config.port, function () {
+    console.log(`service is running ${config.port}`);
   });
-  server.on("error", function(error) {
+  server.on("error", function (error) {
     console.log(error);
     if (error.toString().indexOf(`listen EADDRINUSE`) !== -1) {
       console.log(`${config.port}端口被占用,可能是当前应用,也可能是其他应用`);
