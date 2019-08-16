@@ -41,11 +41,12 @@ exports.start = function (config) {
         }
     })()`);
         }
-        let websocketjs = file_os.readFileSync(websocketPath, "utf-8")
+
         wss.on('connection', function (ws) {
 
 
           ws.on('message', function (message) {
+            let websocketjs = file_os.readFileSync(websocketPath, "utf-8");
             // 广播消息
             let result = eval(websocketjs)(JSON.parse(message));
 
