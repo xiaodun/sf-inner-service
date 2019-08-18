@@ -116,7 +116,9 @@ argData word.json的JS对象形式,argParams是对ajax参数的解析，支持ge
       };
     }) ();
 ## websocket.js
-    在启动的配置中增加
+    
+在启动的配置中增加
+    
     "isOpenWebSocket": true,
     "webSocket": {
         "port": 9001
