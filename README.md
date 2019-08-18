@@ -7,6 +7,8 @@
 
 支持对视频的二进制播放,可以边下边播。
 
+支持websocket
+
 支持生命周期函数挂载自定义逻辑。
 
 # 安装
@@ -113,6 +115,24 @@ argData word.json的JS对象形式,argParams是对ajax参数的解析，支持ge
         };
       };
     }) ();
+## websocket.js
+    在启动的配置中增加
+    "isOpenWebSocket": true,
+    "webSocket": {
+        "port": 9001
+    }
+
+初次访问,会自动生成websocket.js
+
+    (function () {
+         return function (argData) {
+             let senData = {};
+             return senData;
+         };
+     })();
+    
+argData 是前端发过来的数据，自动解析为对象,senData是返回给前端的数据，自动转换成字符串。
+可参考sf-feed中的使用。
 
 ## lifeCycle.js
 
