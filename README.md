@@ -269,70 +269,6 @@ argData 是前端发过来的数据，自动解析为对象,senData是返回给�
         host: IPv4
         
 
-## create-react-app 配置代理
-
-   src下新增env.js
-   
-    var os = require("os");
-    var IPv4 = "localhost";
-    let network = os.networkInterfaces();
-
-    //动态的获取本机IP地址
-    for (let key in network) {
-      let env = network[key];
-      for (var i = 0; i < env.length; i++) {
-        if (env[i].family === "IPv4" && env[i].address !== "127.0.0.1") {
-          IPv4 = env[i].address;
-        }
-      }
-    }
-    module.exports.IPv4 = IPv4;
-    
-   src下新增setupProxy.js
-   
-    const proxy = require("http-proxy-middleware");
-    var readFile = require("fs");
-
-    const { IPv4 } = require("./env");
-    //获取内置服务器的配置
-    let bultinService = {
-      path: "./service/app/config.json"
-    };
-    bultinService.config = JSON.parse(
-      readFile.readFileSync(bultinService.path, "utf-8")
-    );
-    module.exports = function(app) {
-      app.use(
-        proxy(`/${bultinService.config.prefix}/**`, {
-          target: `http://${IPv4}:${bultinService.config.port}/`,
-          changeOrigin: true
-        })
-      );
-    };
-    
-   src下serviceWorker.js  不加则无法调试
-   
-   新增
-   
-    const { IPv4 } = require("./env");
-  
-   修改
-   
-    const isLocalhost = Boolean(
-      window.location.hostname === IPv4 ||
-       
-    );
-    
-  scripts/start.js
-  
-  新增
-  
-     const { IPv4 } = require("../src/env");
-  
-  修改
-  
-     const HOST = IPv4;
-
 
       
 
@@ -343,4 +279,3 @@ argData 是前端发过来的数据，自动解析为对象,senData是返回给�
 
 视频的相关处理可参见sf-mobile-web
 
-create-react-app的使用案例sf-react-lab
