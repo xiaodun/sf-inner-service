@@ -11,6 +11,7 @@
 
 支持生命周期函数挂载自定义逻辑。
 
+![生成文件结构图](https://github.com/xiaodun/sf-inner-service/blob/master/preview.png)
 # 安装
 
     npm install --save-dev sf-inner-service
