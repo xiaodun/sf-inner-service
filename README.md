@@ -196,7 +196,7 @@ argData 是前端发过来的数据，自动解析为对象,senData是返回给�
 
   建议项目有个统一的前缀,并在脚手架里配置代理。
   
-  在src同级目录下，新建Service目录，并创建config.json
+  在src同级目录下，新建service目录，并创建config.json
    
        {
         "prefix": "api",
