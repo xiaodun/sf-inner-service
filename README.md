@@ -269,14 +269,3 @@ argData 是前端发过来的数据，自动解析为对象,senData是返回给�
    
         host: IPv4
         
-
-
-      
-
-
-# 总结
-
-数据的操作可参见sf-pc-web
-
-视频的相关处理可参见sf-mobile-web
-
