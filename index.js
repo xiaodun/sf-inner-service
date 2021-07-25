@@ -248,6 +248,15 @@ exports.start = function (config) {
       } else if (request.method.toUpperCase() == "GET") {
         var params = url_os.parse(request.url, true).query;
         executeCommand(params);
+      } else if (request.method.toUpperCase() == "OPTIONS") {
+        response.writeHead(200, {
+          "Content-Type": "text/plain",
+          "Access-Control-Allow-Origin": "*",
+          "Access-Control-Allow-Headers":
+            "Content-Type, Content-Length, Authorization, Accept, X-Requested-With , yourHeaderFeild, sessionToken",
+          "Access-Control-Allow-Methods": "PUT, POST, GET, DELETE, OPTIONS",
+        });
+        response.end("");
       }
       function createFloder(list) {
         try {
