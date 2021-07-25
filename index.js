@@ -10,7 +10,7 @@ exports.start = function (config) {
   var IPv4 = "localhost";
   var os = require("os");
   var formidable_os = require("formidable");
-  var WebSocketServer = require('ws').Server
+  var WebSocketServer = require("ws").Server;
   //动态的获取本机IP地址
   let network = os.networkInterfaces();
   for (let key in network) {
@@ -24,7 +24,7 @@ exports.start = function (config) {
   if (config.isOpenWebSocket) {
     //开启了webSocket
     if (config.webSocket && config.webSocket.port == undefined) {
-      console.log('没有配置webSocket端口');
+      console.log("没有配置webSocket端口");
       return;
     }
     try {
@@ -32,38 +32,35 @@ exports.start = function (config) {
       console.log(`webSocket is running ${config.webSocket.port}`);
       try {
         //读取websocket.js 没有则创建
-        let websocketPath = config.dataFloderName + "/websocket.js"
+        let websocketPath = config.dataFloderName + "/websocket.js";
         if (!file_os.existsSync(websocketPath)) {
-          file_os.writeFileSync(websocketPath, `(function(){
+          file_os.writeFileSync(
+            websocketPath,
+            `(function(){
         return function(argData){
             let senData = {}
             return senData;
         }
-    })()`);
+    })()`
+          );
         }
 
-        wss.on('connection', function (ws) {
-
-
-          ws.on('message', function (message) {
+        wss.on("connection", function (ws) {
+          ws.on("message", function (message) {
             let websocketjs = file_os.readFileSync(websocketPath, "utf-8");
             // 广播消息
             let result = eval(websocketjs)(JSON.parse(message));
 
             ws.send(JSON.stringify(result));
-          })
+          });
         });
-
       } catch (error) {
         console.log(error);
       }
-
     } catch (error) {
       throw new Error(error);
     }
-
-
-  };
+  }
   var server = http_os.createServer(function (request, response) {
     try {
       var urlElementsArr = request.url.slice(1, request.url.length).split("/");
@@ -80,19 +77,17 @@ exports.start = function (config) {
         command = urlElementsArr[urlElementsArr.length - 1].slice(0, paramsPos);
       }
 
-
       //视频播放
       let external = {};
 
-      let floderPathArr = (config.abspath
-        ? config.abspath.split("/")
-        : []
+      let floderPathArr = (
+        config.abspath ? config.abspath.split("/") : []
       ).concat([
         config.dataFloderName,
         prefix,
         appName,
         ...moduleNames,
-        dataName
+        dataName,
       ]);
       var rootFloder = {
         path:
@@ -102,12 +97,12 @@ exports.start = function (config) {
             prefix,
             appName,
             ...moduleNames,
-            dataName
-          ].join("/")
+            dataName,
+          ].join("/"),
       };
 
       let countPath = "";
-      floderPathArr.forEach(el => {
+      floderPathArr.forEach((el) => {
         countPath += el + "/";
         if (!file_os.existsSync(countPath)) {
           file_os.mkdirSync(countPath);
@@ -178,7 +173,7 @@ exports.start = function (config) {
             response.writeHead(206, {
               "Content-Range": "bytes " + start + "-" + end + "/" + total,
               "Accept-Ranges": "bytes",
-              "Content-Length": chunksize
+              "Content-Length": chunksize,
             });
 
             var stream = file_os
@@ -201,7 +196,6 @@ exports.start = function (config) {
         file_os.writeFileSync(rootFloder.commandPath, commandTemplate);
       }
       //解析参数
-
       if (request.method.toUpperCase() == "POST") {
         /**
          * 文件上传
@@ -213,7 +207,7 @@ exports.start = function (config) {
           )
         ) {
           var postData = {
-            files: []
+            files: [],
           };
           var form = new formidable_os.IncomingForm();
           form.maxFileSize = 5 * 1024 * 1024 * 1024;
@@ -232,7 +226,7 @@ exports.start = function (config) {
             postData.files.push({
               name: file.name,
               type: file.type,
-              flag: file.path.substr(file.path.lastIndexOf("\\") + 1)
+              flag: file.path.substr(file.path.lastIndexOf("\\") + 1),
             });
           });
           form.on("end", function () {
@@ -258,7 +252,7 @@ exports.start = function (config) {
       function createFloder(list) {
         try {
           let path = "";
-          list.forEach(el => {
+          list.forEach((el) => {
             path += el;
             if (!file_os.existsSync(path)) {
               file_os.mkdirSync(path);
@@ -299,11 +293,11 @@ exports.start = function (config) {
               );
             } else {
               response.writeHead(500, {
-                "Content-Type": "application/json"
+                "Content-Type": "application/json",
               });
               response.end(
                 JSON.stringify({
-                  message: "重写数据时发生错误,没有得到有效的返回数据"
+                  message: "重写数据时发生错误,没有得到有效的返回数据",
                 })
               );
               return;
@@ -322,7 +316,7 @@ exports.start = function (config) {
             let readStream = file_os.ReadStream(path);
             response.writeHead(200, {
               "Content-Type": "application/octet-stream",
-              "Accept-Ranges": "bytes"
+              "Accept-Ranges": "bytes",
             });
             readStream.on("close", function () {
               response.end();
@@ -334,7 +328,7 @@ exports.start = function (config) {
               "Content-Type": "application/json",
               "Access-Control-Allow-Methods": "DELETE,PUT,POST,GET,OPTIONS",
               "Access-Control-Allow-Origin": "*",
-              "Access-Control-Allow-Headers": "content-type"
+              "Access-Control-Allow-Headers": "content-type",
             });
             response.end(JSON.stringify(result.response.data));
           }
@@ -353,7 +347,8 @@ exports.start = function (config) {
   }
   server.setTimeout(0);
   server.listen(config.port, function () {
-    console.log(`service is running ${config.port}`);
+    console.log(`service is running http://${IPv4}:${config.port}`);
+    // https://192.168.10.118:8000/notes
   });
   server.on("error", function (error) {
     console.log(error);

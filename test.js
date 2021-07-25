@@ -1,11 +1,10 @@
 var Service = require("./index.js");
-var file_os = require("fs");
 Service.start({
   prefix: "api",
-  port: 8089,
+  port: 8091,
   dataFloderName: "data",
-  isOpenWebSocket: true,
+  isOpenWebSocket: false,
   webSocket: {
-    port: 9001
-  }
+    port: 9001,
+  },
 });
