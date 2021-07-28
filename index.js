@@ -62,6 +62,21 @@ exports.start = function (config) {
     }
   }
   var server = http_os.createServer(function (request, response) {
+    let isLocal = false;
+    if (request.headers.origin === "null") {
+      //使用文件协议
+      isLocal = true;
+    } else if (request.headers.referer) {
+      const reqIpv4 = url_os.parse(request.headers.referer).hostname;
+      if (
+        reqIpv4 === "127.0.0.1" ||
+        reqIpv4 === "localhost" ||
+        reqIpv4 === IPv4
+      ) {
+        isLocal = true;
+      }
+    }
+
     try {
       var urlElementsArr = request.url.slice(1, request.url.length).split("/");
       console.log(`${IPv4}:${config.port}${request.url}`);
@@ -78,7 +93,9 @@ exports.start = function (config) {
       }
 
       //视频播放
-      let external = {};
+      let external = {
+        isLocal,
+      };
 
       let floderPathArr = (
         config.abspath ? config.abspath.split("/") : []
