@@ -63,16 +63,33 @@ exports.start = function (config) {
   }
   var server = http_os.createServer(function (request, response) {
     let isLocal = false;
-    if (request.headers.origin === "null") {
+    if (request.headers.origin === "null" && !request.headers.referer) {
       //使用文件协议
       isLocal = true;
     } else if (request.headers.referer) {
       const reqIpv4 = url_os.parse(request.headers.referer).hostname;
-      if (
-        reqIpv4 === "127.0.0.1" ||
-        reqIpv4 === "localhost" ||
-        reqIpv4 === IPv4
-      ) {
+      if (reqIpv4 === "127.0.0.1" || reqIpv4 === "localhost") {
+        isLocal = true;
+      }
+    }
+
+    if (!isLocal) {
+      //判断客户端链接
+      const remoteIpAddress =
+        request.headers["x-real-ip"] ||
+        request.headers["x-forwarded-for"] ||
+        request.connection.remoteAddres ||
+        request.socket.remoteAddress ||
+        "";
+      const remoteList = remoteIpAddress.split("::ffff:");
+      let remoteIp;
+      if (remoteList.length > 1) {
+        remoteIp = remoteList[1];
+      } else {
+        remoteIp = remoteList[0];
+      }
+
+      if (remoteIp === IPv4) {
         isLocal = true;
       }
     }
