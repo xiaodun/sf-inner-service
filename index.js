@@ -112,6 +112,8 @@ exports.start = function (config) {
       //视频播放
       let external = {
         isLocal,
+        request,
+        response,
       };
 
       let floderPathArr = (
