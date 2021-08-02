@@ -100,7 +100,7 @@ exports.start = function (config) {
         ...moduleNames,
         dataName,
       ]);
-      var rootFloder = {
+      var appFloder = {
         path:
           (config.abspath ? config.abspath + "/" : "") +
           [
@@ -112,6 +112,30 @@ exports.start = function (config) {
           ].join("/"),
       };
 
+      let dataFloder = {
+        path:
+          (config.abspath ? config.abspath + "/" : "") +
+          [config.dataFloderName].join("/"),
+      };
+      let templateFloder = {
+        path:
+          (config.abspath ? config.abspath + "/" : "") +
+          ["templates", "lifeCycleTemplate.js"].join("/"),
+      };
+
+      dataFloder.lifeCyclePath = dataFloder.path + "/lifeCycle.js";
+      let dataLifeCycleModule = {};
+      if (!file_os.existsSync(dataFloder.lifeCyclePath)) {
+        //如果存在生命周期函数
+        file_os.writeFileSync(
+          dataFloder.lifeCyclePath,
+          file_os.readFileSync(templateFloder.path, "utf-8")
+        );
+      }
+      dataLifeCycleModule = eval(
+        file_os.readFileSync(dataFloder.lifeCyclePath, "utf-8")
+      )();
+
       let countPath = "";
       floderPathArr.forEach((el) => {
         countPath += el + "/";
@@ -120,26 +144,26 @@ exports.start = function (config) {
         }
       });
       //创建文件
-      rootFloder.dataPath = rootFloder.path + "/" + dataName + ".json";
+      appFloder.dataPath = appFloder.path + "/" + dataName + ".json";
 
-      if (!file_os.existsSync(rootFloder.dataPath)) {
-        file_os.writeFileSync(rootFloder.dataPath, "");
+      if (!file_os.existsSync(appFloder.dataPath)) {
+        file_os.writeFileSync(appFloder.dataPath, "");
       }
 
       //生命周期文件
-      rootFloder.lifeCyclePath = rootFloder.path + "/lifeCycle.js";
+      appFloder.lifeCyclePath = appFloder.path + "/lifeCycle.js";
 
-      let lifeCycleModule = {};
-      if (file_os.existsSync(rootFloder.lifeCyclePath)) {
+      let appLifeCycleModule = {};
+      if (file_os.existsSync(appFloder.lifeCyclePath)) {
         //如果存在生命周期函数
-        lifeCycleModule = eval(
-          file_os.readFileSync(rootFloder.lifeCyclePath, "utf-8")
+        appLifeCycleModule = eval(
+          file_os.readFileSync(appFloder.lifeCyclePath, "utf-8")
         )();
       }
 
       //创建额外的文件
-      lifeCycleModule.createFloder &&
-        lifeCycleModule.createFloder(createFloder, external);
+      appLifeCycleModule.createFloder &&
+        appLifeCycleModule.createFloder(createFloder, external);
 
       var commandTemplate = `(function(){
       return function(argData,argParams){
@@ -160,8 +184,8 @@ exports.start = function (config) {
 
       //对不同命令的额外处理
       let commandResults =
-        lifeCycleModule.dealCommand &&
-        lifeCycleModule.dealCommand(command, external);
+        appLifeCycleModule.dealCommand &&
+        appLifeCycleModule.dealCommand(command, external);
 
       if (commandResults) {
         if (commandResults.type === "video") {
@@ -202,9 +226,9 @@ exports.start = function (config) {
       }
 
       //创建命令文件  此处代码需要在dealCommand生命周期钩子后执行，防止在处理静态资源的时候额外的创建.js
-      rootFloder.commandPath = rootFloder.path + "/" + command + ".js";
-      if (!file_os.existsSync(rootFloder.commandPath)) {
-        file_os.writeFileSync(rootFloder.commandPath, commandTemplate);
+      appFloder.commandPath = appFloder.path + "/" + command + ".js";
+      if (!file_os.existsSync(appFloder.commandPath)) {
+        file_os.writeFileSync(appFloder.commandPath, commandTemplate);
       }
       //解析参数
       if (request.method.toUpperCase() == "POST") {
@@ -222,10 +246,10 @@ exports.start = function (config) {
           };
           var form = new formidable_os.IncomingForm();
           form.maxFileSize = 5 * 1024 * 1024 * 1024;
-          if (lifeCycleModule.getUploadPath) {
-            form.uploadDir = lifeCycleModule.getUploadPath(external);
+          if (appLifeCycleModule.getUploadPath) {
+            form.uploadDir = appLifeCycleModule.getUploadPath(external);
           } else {
-            form.uploadDir = process.cwd() + "/" + rootFloder.path;
+            form.uploadDir = process.cwd() + "/" + appFloder.path;
           }
           form.parse(request, function (error, fileds, files) {
             if (error) {
@@ -287,71 +311,87 @@ exports.start = function (config) {
           //执行命令
           //获取json数据
           var data = JSON.parse(
-            file_os.readFileSync(rootFloder.dataPath, "utf-8") || null
+            file_os.readFileSync(appFloder.dataPath, "utf-8") || null
           );
           var cloneData = JSON.parse(JSON.stringify(data));
-          // var result = eval(new String(file_os.readFileSync(rootFloder.commandPath)))(cloneData,params);
-          var result = eval(
-            file_os.readFileSync(rootFloder.commandPath, "utf-8")
-          )(cloneData, params, external);
-          if (result.isDelete) {
-            let path;
-            if (lifeCycleModule.getDeleteFilePath) {
-              path = lifeCycleModule.getDeleteFilePath(external, result);
-            } else {
-              path = rootFloder.path + "/" + result.file.flag;
-            }
-            file_os.unlinkSync(path);
-          }
 
-          if (result.isWrite) {
-            if (result.data) {
-              //防止数据遭到意外覆盖  比如忘记返回数据！
-              file_os.writeFileSync(
-                rootFloder.dataPath,
-                JSON.stringify(result.data, null, 4)
-              );
-            } else {
-              response.writeHead(500, {
-                "Content-Type": "application/json",
+          let allowNextStep = true;
+          var result;
+          if (dataLifeCycleModule.ajaxInterceptor) {
+            allowNextStep = false;
+            result = dataLifeCycleModule.ajaxInterceptor(
+              cloneData,
+              params,
+              external
+            );
+
+            allowNextStep = result.allowNextStep;
+          }
+          if (allowNextStep) {
+            result = eval(file_os.readFileSync(appFloder.commandPath, "utf-8"))(
+              cloneData,
+              params,
+              external
+            );
+
+            if (result.isDelete) {
+              let path;
+              if (appLifeCycleModule.getDeleteFilePath) {
+                path = appLifeCycleModule.getDeleteFilePath(external, result);
+              } else {
+                path = appFloder.path + "/" + result.file.flag;
+              }
+              file_os.unlinkSync(path);
+            }
+            if (result.isWrite) {
+              if (result.data) {
+                //防止数据遭到意外覆盖  比如忘记返回数据！
+                file_os.writeFileSync(
+                  appFloder.dataPath,
+                  JSON.stringify(result.data, null, 4)
+                );
+              } else {
+                response.writeHead(500, {
+                  "Content-Type": "application/json",
+                });
+                response.end(
+                  JSON.stringify({
+                    message: "重写数据时发生错误,没有得到有效的返回数据",
+                  })
+                );
+                return;
+              }
+            }
+
+            if (result.isDownload) {
+              // 文件下载;
+              let path;
+
+              if (appLifeCycleModule.getDownloadFilePath) {
+                path = appLifeCycleModule.getDownloadFilePath(external, result);
+              } else {
+                path = appFloder.path + "/" + result.file.flag;
+              }
+              let readStream = file_os.ReadStream(path);
+              response.writeHead(200, {
+                "Content-Type": "application/octet-stream",
+                "Accept-Ranges": "bytes",
               });
-              response.end(
-                JSON.stringify({
-                  message: "重写数据时发生错误,没有得到有效的返回数据",
-                })
-              );
+              readStream.on("close", function () {
+                response.end();
+              });
+              readStream.pipe(response);
               return;
             }
           }
-
-          if (result.isDownload) {
-            // 文件下载;
-            let path;
-
-            if (lifeCycleModule.getDownloadFilePath) {
-              path = lifeCycleModule.getDownloadFilePath(external, result);
-            } else {
-              path = rootFloder.path + "/" + result.file.flag;
-            }
-            let readStream = file_os.ReadStream(path);
-            response.writeHead(200, {
-              "Content-Type": "application/octet-stream",
-              "Accept-Ranges": "bytes",
-            });
-            readStream.on("close", function () {
-              response.end();
-            });
-            readStream.pipe(response);
-          } else {
-            //返回结果
-            response.writeHead(result.response.code, {
-              "Content-Type": "application/json",
-              "Access-Control-Allow-Methods": "DELETE,PUT,POST,GET,OPTIONS",
-              "Access-Control-Allow-Origin": "*",
-              "Access-Control-Allow-Headers": "content-type",
-            });
-            response.end(JSON.stringify(result.response.data));
-          }
+          //返回结果
+          response.writeHead(result.response.code, {
+            "Content-Type": "application/json",
+            "Access-Control-Allow-Methods": "DELETE,PUT,POST,GET,OPTIONS",
+            "Access-Control-Allow-Origin": "*",
+            "Access-Control-Allow-Headers": "content-type",
+          });
+          response.end(JSON.stringify(result.response.data));
         } catch (error) {
           dealError(response, error);
         }
