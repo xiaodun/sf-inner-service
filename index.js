@@ -7,6 +7,7 @@ exports.start = function (config) {
   var http_os = require("http");
   var file_os = require("fs");
   var url_os = require("url");
+  var path_os = require("path");
   var IPv4 = "localhost";
   var os = require("os");
   var formidable_os = require("formidable");
@@ -91,9 +92,7 @@ exports.start = function (config) {
         response,
       };
 
-      let floderPathArr = (
-        config.abspath ? config.abspath.split("/") : []
-      ).concat([
+      let floderPathArr = [].concat([
         config.dataFloderName,
         prefix,
         appName,
@@ -101,26 +100,23 @@ exports.start = function (config) {
         dataName,
       ]);
       var appFloder = {
-        path:
-          (config.abspath ? config.abspath + "/" : "") +
-          [
-            config.dataFloderName,
-            prefix,
-            appName,
-            ...moduleNames,
-            dataName,
-          ].join("/"),
+        path: [
+          config.dataFloderName,
+          prefix,
+          appName,
+          ...moduleNames,
+          dataName,
+        ].join("/"),
       };
 
       let dataFloder = {
-        path:
-          (config.abspath ? config.abspath + "/" : "") +
-          [config.dataFloderName].join("/"),
+        path: [config.dataFloderName].join("/"),
       };
       let templateFloder = {
-        path:
-          (config.abspath ? config.abspath + "/" : "") +
-          ["templates", "lifeCycleTemplate.js"].join("/"),
+        path: path_os.resolve(
+          __dirname,
+          ["templates", "lifeCycleTemplate.js"].join("/")
+        ),
       };
 
       dataFloder.lifeCyclePath = dataFloder.path + "/lifeCycle.js";
