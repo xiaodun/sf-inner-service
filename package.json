@@ -6,7 +6,7 @@
     "type": "git",
     "url": "https://github.com/xiaodun/sf-inner-service"
   },
-  "main": "index.js",
+  "main": "sfInnerService.js",
   "scripts": {
     "test": "node test.js"
   },
