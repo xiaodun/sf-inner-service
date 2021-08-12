@@ -85,6 +85,12 @@ exports.start = function (config) {
         command = urlElementsArr[urlElementsArr.length - 1].slice(0, paramsPos);
       }
 
+      if (prefix === "favicon.ico") {
+        response.writeHead(200, {});
+        response.end("");
+        return;
+      }
+
       //视频播放
       let external = {
         isLocal,
