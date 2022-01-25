@@ -169,12 +169,12 @@ exports.start = function (config) {
 
       var commandTemplate = `(function(){
       return function(argData,argParams){
-          //argData 数据的副本
+         
           return {
   
-              isWrite:false,//是否覆盖数据
-              //data:argData,//需要存储的新数据
-              response:{//返回的数据
+              isWrite:false,
+              //data:argData,
+              response:{
                   code:200,
                   data:{
       
@@ -393,7 +393,11 @@ exports.start = function (config) {
             "Access-Control-Allow-Origin": "*",
             "Access-Control-Allow-Headers": "content-type",
           });
-          response.end(JSON.stringify(result.response.data));
+          if (!result.async) {
+            //异步请求自己处理返回
+
+            response.end(JSON.stringify(result.response.data));
+          }
         } catch (error) {
           dealError(response, error);
         }
