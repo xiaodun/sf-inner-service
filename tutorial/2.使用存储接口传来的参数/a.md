@@ -1,6 +1,5 @@
-项目地址:https://github.com/xiaodun/sf-inner-service
-
 为了更加纯粹的演示 sf-inner-service 所提供的能力,直接用简单的 html 文件。
+
 VS code 中可以安装 Live Server 插件，单独的 html 文件也可以随着代码的更新刷新页面
 ![](./images/以服务的形势打开html文件.png)
 
@@ -11,29 +10,18 @@ VS code 中可以安装 Live Server 插件，单独的 html 文件也可以随�
 
 解压后安装依赖，执行`npm install`
 
-打开`test.js`
+执行` node testService.js`
 
-```
-const sfInnerService = require("./sfInnerService.js");
-sfInnerService.start({
-  port: 9000,
-});
-
-```
-
-`port: 8089`是服务器运行的端口，如果被占用，则需要更改
-
-执行`node test.js`,启动成功会输出地址，您可以通过这个地址直接访问,当然，和您在同一个局域网下的其它设备也能访问
+`port` 是服务器运行的端口，如果被占用，则需要更改,启动成功会输出地址，您可以通过这个地址直接访问,当然，和您在同一个局域网下的其它设备也能访问
 
 为了减少本机 ip 地址变化带来的影响，可以使用 localhost、127.0.0.1 代替
 ![](./成功启动.png)
 
-输入内容点击保存后
+通过浏览器打开 b.html,serviceUrl 就是服务器地址,输入内容点击保存后
 
 `sf-inner-service`会在 data 文件夹下创建以下结构
 
 ```
-data
   api
     hero
       chat
@@ -54,9 +42,10 @@ data
       isWrite: false, //是否覆盖数据
       //data:argData,//需要存储的新数据
       response: {
-        //返回的数据
         code: 200,
-        data: {},
+        data: {
+          //返回的数据
+        },
       },
     };
   };
