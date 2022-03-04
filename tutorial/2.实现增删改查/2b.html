@@ -28,13 +28,14 @@
   const historyWrapDom = document.getElementById("history-wrap");
   const searchInputDom = document.getElementById("search-input");
   //服务器地址
-  const serviceUrl = "http://10.210.2.234:8091";
+  const serviceUrl = "http://127.0.0.1:8091";
+  const commonUrl = `${serviceUrl}/api/hero/chat`
   reqGetHistoryList();
   function onSearchHistory(event) {
     reqGetHistoryList();
   }
   function onSave() {
-    fetch(`${serviceUrl}/api/hero/chat/saveWord`, {
+    fetch(commonUrl + '/saveWord', {
       body: JSON.stringify({
         word: textareaDom.value,
       }),
@@ -54,7 +55,7 @@
   }
   function onDelHistory(index) {
     fetch(
-      `${serviceUrl}/api/hero/chat/delHistoryByIndex?index=${index}`,
+      commonUrl + `/delHistoryByIndex?index=${index}`,
       {
         method: "get",
         headers: {
@@ -69,7 +70,7 @@
     const content = prompt();
     if (content != null) {
       fetch(
-        `${serviceUrl}/api/hero/chat/updateHistoryByIndex`,
+        commonUrl + `/updateHistoryByIndex`,
         {
           body: JSON.stringify({
             content,
@@ -88,7 +89,7 @@
   function reqGetHistoryList() {
     historyWrapDom.innerHTML = "";
     fetch(
-      `${serviceUrl}/api/hero/chat/getHistoryList?searchStr=${searchInputDom.value}`,
+      commonUrl + `/getHistoryList?searchStr=${searchInputDom.value}`,
       {
 
         method: "get",
