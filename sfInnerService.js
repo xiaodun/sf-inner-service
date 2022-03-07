@@ -377,6 +377,9 @@ exports.start = function (config) {
               let readStream = file_os.ReadStream(path);
               response.writeHead(200, {
                 "Content-Type": "application/octet-stream",
+                "Access-Control-Allow-Methods": "DELETE,PUT,POST,GET,OPTIONS",
+                "Access-Control-Allow-Origin": "*",
+                "Access-Control-Allow-Headers": "content-type",
                 "Accept-Ranges": "bytes",
               });
               readStream.on("close", function () {
