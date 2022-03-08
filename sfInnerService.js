@@ -63,6 +63,15 @@ exports.start = function (config) {
     }
   }
   var server = http_os.createServer(function (request, response) {
+    const crossDomainSettings = {
+      "Access-Control-Allow-Methods": "DELETE,PUT,POST,GET,OPTIONS",
+      "Access-Control-Allow-Origin": request.headers.origin || "*",
+      "Access-Control-Allow-Headers":
+        Object.keys(request.headers).join(",") +
+        "," +
+        (request.headers["access-control-request-headers"] || ""),
+      "Access-Control-Allow-Credentials": true,
+    };
     let isLocal = false;
     if (request.headers.referer) {
       const reqIpv4 = url_os.parse(request.headers.referer).hostname;
@@ -288,10 +297,7 @@ exports.start = function (config) {
       } else if (request.method.toUpperCase() == "OPTIONS") {
         response.writeHead(200, {
           "Content-Type": "text/plain",
-          "Access-Control-Allow-Origin": "*",
-          "Access-Control-Allow-Headers":
-            "Content-Type, Content-Length, Authorization, Accept, X-Requested-With , yourHeaderFeild, sessionToken",
-          "Access-Control-Allow-Methods": "PUT, POST, GET, DELETE, OPTIONS",
+          ...crossDomainSettings,
         });
         response.end("");
       }
@@ -377,10 +383,8 @@ exports.start = function (config) {
               let readStream = file_os.ReadStream(path);
               response.writeHead(200, {
                 "Content-Type": "application/octet-stream",
-                "Access-Control-Allow-Methods": "DELETE,PUT,POST,GET,OPTIONS",
-                "Access-Control-Allow-Origin": "*",
-                "Access-Control-Allow-Headers": "content-type",
                 "Accept-Ranges": "bytes",
+                ...crossDomainSettings,
               });
               readStream.on("close", function () {
                 response.end();
