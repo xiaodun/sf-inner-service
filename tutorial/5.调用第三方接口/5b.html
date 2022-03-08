@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>调用第三方接口</title>
+    <style>
+        #resultWrap {
+            word-break: break-all;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="input-wrap">
+
+        <!--  https://t7.baidu.com/it/u=4198287529,2774471735&fm=193&f=GIF -->
+        <input autofocus style="width: 300px;" id="urlInput" />
+        <button onclick="onFetch()">请求</button>
+    </div>
+    <h3>返回信息</h3>
+    <div style="margin: 20px;" id="resultWrap">
+
+    </div>
+</body>
+<script>
+    const resultWrap = document.getElementById("resultWrap");
+    const urlInput = document.getElementById("urlInput");
+    //服务器地址
+    const serviceUrl = "http://127.0.0.1:8091";
+    const commonUrl = `${serviceUrl}/api/base`
+
+    function onFetch() {
+
+        if (!urlInput.value) {
+            return;
+        }
+        resultWrap.textContent = ""
+        fetch(commonUrl + `/fetchOtherDomainUrl`, {
+
+            method: "post",
+            body: JSON.stringify({
+                url: urlInput.value
+            }),
+            headers: {
+                "content-type": "application/json",
+            },
+        })
+            .then(function (response) {
+
+                return response.json();
+            })
+            .then(function (myJson) {
+                resultWrap.textContent = myJson;
+            });
+    }
+
+
+</script>
+
+</html>
