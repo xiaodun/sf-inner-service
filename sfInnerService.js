@@ -204,7 +204,8 @@ exports.start = function (config) {
           let { filePath } = commandResults;
           file_os.stat(filePath, function (error, stats) {
             if (error) {
-              response.end(error);
+              console.error(error);
+              response.end(error.message);
             }
             var range = request.headers.range;
             if (!range) {
