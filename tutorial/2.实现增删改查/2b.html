@@ -47,11 +47,8 @@
       .then(function (response) {
         textareaDom.value = "";
         reqGetHistoryList();
-        return response.json();
       })
-      .then(function (myJson) {
-        console.log(myJson);
-      });
+
   }
   function onDelHistory(index) {
     fetch(

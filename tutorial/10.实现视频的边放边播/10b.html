@@ -1,0 +1,138 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>实现视频的边放边播</title>
+    <style>
+        #videoListWrap .item {
+            margin-bottom: 20px;
+        }
+    </style>
+</head>
+
+<body>
+    <div id="videoWrap">
+        <video width="300" height="150" controls></video>
+    </div>
+    <div class="upload-block">
+
+        <input id="uploadInput" type="file" accept="video.*" />
+        <button onclick="onUpload()">上传</button>
+    </div>
+    <h1>视频列表</h1>
+    <div id="videoListWrap">
+
+    </div>
+</body>
+<script>
+    const videoListWrap = document.getElementById("videoListWrap");
+    const playVideoDom = document.querySelector("#videoWrap video");
+    //服务器地址
+    const serviceUrl = "http://127.0.0.1:8091";
+    const commonUrl = `${serviceUrl}/api/video`
+    reqGetVideoList();
+    function reqGetVideoList() {
+        fetch(commonUrl + `/getVideolist`, {
+
+            method: "get",
+            headers: {
+                "content-type": "application/json",
+            },
+        })
+            .then(function (response) {
+
+                return response.json();
+            })
+            .then(function (myJson) {
+                videoListWrap.innerHTML = "";
+                myJson.forEach((item, index) => {
+                    videoListWrap.innerHTML += `
+                        <div  class="item" >
+                            <span>${item.name}</span> 
+                            <button style="margin:0 5px" onclick="onPlay('${item.id}')">播放</button> 
+                            <button style="margin:0 5px" onclick="onDownload('${item.flag}','${item.name}')">下载</button>   
+                            <button onclick="onDelete('${item.flag}')">删除</button>   
+                        </div>
+                    `
+                })
+            });
+    }
+    function onDelete(flag) {
+
+
+        fetch(commonUrl + `/delete`, {
+
+            method: "post",
+            body: JSON.stringify({
+                flag,
+            }),
+
+        })
+            .then(function (response) {
+
+                reqGetVideoList();
+
+            })
+
+
+
+    }
+    function onPlay(id) {
+
+        playVideoDom.src = commonUrl + `/${id}`
+    }
+    function onDownload(flag, name) {
+
+
+        fetch(commonUrl + `/download`, {
+            responseType: 'blob',
+            method: "post",
+            body: JSON.stringify({
+                flag,
+            }),
+
+        })
+            .then(function (response) {
+
+                return response.blob()
+
+            }).then(blob => {
+                const a = document.createElement('a');
+                a.download = name;
+                a.href = URL.createObjectURL(blob);
+                document.body.appendChild(a);
+                a.click();
+                a.remove();
+                URL.revokeObjectURL(a.href);
+            })
+
+
+
+    }
+    function onUpload() {
+        const formData = new FormData();
+        const uploadInput = document.querySelector("#uploadInput");
+        if (uploadInput.files[0]) {
+
+            formData.append('file', uploadInput.files[0])
+            fetch(commonUrl + `/upload`, {
+                body: formData,
+                method: "post",
+
+            })
+                .then(function (response) {
+
+                    reqGetVideoList();
+
+                })
+
+        }
+
+    }
+
+</script>
+
+</html>
