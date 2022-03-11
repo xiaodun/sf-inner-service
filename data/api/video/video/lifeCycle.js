@@ -1,10 +1,10 @@
-// external 在不同生命周期以及主程序之间共享参数
 (function () {
   return function () {
     const savePathList = ["c://innerServiceTutorial", "/movie"];
 
     return {
       createFloder: function (createFloder, external) {
+        // external 在不同生命周期以及主程序之间共享参数
         createFloder(savePathList);
         external.savePath = savePathList.join("");
       },
@@ -29,7 +29,6 @@
 
           external.moveList = moveList;
         } else {
-          //因为无法预知视频的名字  所以这里无法加入详细的判断
           if (command.includes(".")) {
             //获取视频
             var filePath =
@@ -57,7 +56,6 @@
         return external.savePath + "/" + result.flag;
       },
       getDownloadFilePath(external, result) {
-        console.log("wx", external, result);
         return external.savePath + "/" + result.flag;
       },
     };

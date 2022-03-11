@@ -4,7 +4,7 @@
     //找到文件的索引方便在manage.json中进行删除
     const index = argData.findIndex((el) => {
       if (el.id === argParams.id) {
-        //获取文件信息,用于字磁盘中删除这个文件
+        //获取文件信息,用于在磁盘中删除这个文件
         file = el;
         return true;
       }

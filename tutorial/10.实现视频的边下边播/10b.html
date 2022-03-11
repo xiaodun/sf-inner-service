@@ -5,7 +5,7 @@
     <meta charset="UTF-8" />
     <meta http-equiv="X-UA-Compatible" content="IE=edge" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>实现视频的边放边播</title>
+    <title>实现视频的边下边播</title>
     <style>
         #videoListWrap .item {
             margin-bottom: 20px;
@@ -17,12 +17,12 @@
     <div id="videoWrap">
         <video width="300" height="150" controls></video>
     </div>
-    <div class="upload-block">
+    <div class="upload-block" style="margin-top: 1em;">
 
         <input id="uploadInput" type="file" accept="video.*" />
         <button onclick="onUpload()">上传</button>
     </div>
-    <h1>视频列表</h1>
+    <h2>视频列表</h2>
     <div id="videoListWrap">
 
     </div>
@@ -49,12 +49,15 @@
             .then(function (myJson) {
                 videoListWrap.innerHTML = "";
                 myJson.forEach((item, index) => {
+                    // 只有用户上传的视频可以被删除
+                    let delBtnStr = item.isUser ? `<button onclick="onDelete('${item.flag}')">删除</button>` : ""
                     videoListWrap.innerHTML += `
                         <div  class="item" >
                             <span>${item.name}</span> 
                             <button style="margin:0 5px" onclick="onPlay('${item.id}')">播放</button> 
                             <button style="margin:0 5px" onclick="onDownload('${item.flag}','${item.name}')">下载</button>   
-                            <button onclick="onDelete('${item.flag}')">删除</button>   
+                            ${delBtnStr}
+                            
                         </div>
                     `
                 })
