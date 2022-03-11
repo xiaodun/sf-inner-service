@@ -39,7 +39,7 @@ sf-inner-service 基于 node.js,实现一对一功能性应用绰绰有余,即�
 
 ## 基础功能介绍
 
-[1.能用来做什么](https://github.com/xiaodun/sf-inner-service/blob/master/tutorial/1.%E8%83%BD%E7%94%A8%E6%9D%A5%E5%81%9A%E4%BB%80%E4%B9%88/1a.md)
+[1.能用来做什么](https://github.com/xiaodun/sf-inner-service/blob/master/tutorial/1.能用来做什么/1a.md)
 
 [2.实现增删改查](https://github.com/xiaodun/sf-inner-service/blob/master/tutorial/2.%E5%AE%9E%E7%8E%B0%E5%A2%9E%E5%88%A0%E6%94%B9%E6%9F%A5/2a.md)
 
