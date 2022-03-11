@@ -47,7 +47,7 @@ sf-inner-service 基于 node.js,实现一对一功能性应用绰绰有余,即�
 
 [4.实现上传下载](https://github.com/xiaodun/sf-inner-service/blob/master/tutorial/4.实现上传下载/4a.md)
 
-[8.websocket 练习](https://github.com/xiaodun/sf-inner-service/blob/master/tutorial/8.websocket 练习/8a.md)
+[8.websocket 练习](https://github.com/xiaodun/sf-inner-service/blob/master/tutorial/8.websocket练习/8a.md)
 
 ## 应用案例
 
