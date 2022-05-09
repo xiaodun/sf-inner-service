@@ -176,22 +176,20 @@ exports.start = function (config) {
       appLifeCycleModule.createFloder &&
         appLifeCycleModule.createFloder(createFloder, external);
 
-      var commandTemplate = `(function(){
-      return function(argData,argParams){
-         
-          return {
-  
-              isWrite:false,
-              //data:argData,
-              response:{
-                  code:200,
-                  data:{
-      
-                  }
-              }
-          }
-      }
-  })()`;
+      var commandTemplate = `
+(function () {
+  return function (argData, argParams, external) {
+    return {
+      isWrite: false,
+      //data:argData,
+      response: {
+        code: 200,
+        data: {},
+      },
+    };
+  };
+})();
+      `;
 
       //对不同命令的额外处理
       let commandResults =
