@@ -1,3 +1,6 @@
+
+[**中文**](https://github.com/xiaodun/sf-inner-service) | [English](https://github.com/xiaodun/sf-inner-service/blob/master/README.md)
+
 sf-inner-service 是以 npm 包存在项目里的小型内置服务器,它将对以下人群产生帮助作用:
 
 - 已经接触前端,但对 ajax 请求,前后端协作,完善的开发流程没有深刻概念

@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Call third-party interface</title>
+    <style>
+        #resultWrap {
+            word-break: break-all;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="input-wrap">
+
+        <input autofocus style="width: 300px;" id="urlInput" />
+        <button onclick="onFetch()">Request</button>
+    </div>
+    <h3>Return information</h3>
+    <div style="margin: 20px;" id="resultWrap">
+
+    </div>
+</body>
+<script>
+    const resultWrap = document.getElementById("resultWrap");
+    const urlInput = document.getElementById("urlInput");
+    //server address
+    const serviceUrl = "http://127.0.0.1:8091";
+    const commonUrl = `${serviceUrl}/api/base`
+
+    function onFetch() {
+
+        if (!urlInput.value) {
+            return;
+        }
+        resultWrap.textContent = ""
+        fetch(commonUrl + `/fetchOtherDomainUrl`, {
+
+            method: "post",
+            body: JSON.stringify({
+                url: urlInput.value
+            }),
+            headers: {
+                "content-type": "application/json",
+            },
+        })
+            .then(function (response) {
+
+                return response.json();
+            })
+            .then(function (myJson) {
+                resultWrap.textContent = myJson;
+            });
+    }
+
+
+</script>
+
+</html>

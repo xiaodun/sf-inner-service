@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Intercept the interface</title>
+    <style>
+        #resultWrap {
+            word-break: break-all;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="input-wrap">
+        <input placeholder="Enter book name" autofocus style="width: 300px;" id="bookInput" />
+        <button onclick="onSave()">Save</button>
+    </div>
+    <h3>Book List</h3>
+    <div style="margin: 20px;" id="resultWrap">
+
+    </div>
+
+</body>
+<script>
+    const resultWrap = document.getElementById("resultWrap");
+    const bookInput = document.getElementById("bookInput");
+    //server address
+    const serviceUrl = "http://127.0.0.1:8091";
+    const commonUrl = `${serviceUrl}/api/book`
+    getBookList();
+    function onSave() {
+        fetch(commonUrl + '/save', {
+            body: JSON.stringify({
+                name: bookInput.value,
+            }),
+            method: "post",
+            headers: {
+                "content-type": "application/json",
+            },
+        })
+            .then(function (response) {
+                return response.json();
+            }).then(function (myJson) {
+                if (myJson.success) {
+
+                    bookInput.value = "";
+                    getBookList();
+
+                }
+                else {
+                    alert(myJson.message)
+                }
+            })
+
+    }
+    function getBookList() {
+        resultWrap.innerHTML = ""
+        fetch(commonUrl + '/list', {
+            method: "get",
+            headers: {
+                "content-type": "application/json",
+            },
+        })
+            .then(function (response) {
+                return response.json()
+            }).then(function (myJson) {
+                myJson.forEach((item, index) => {
+                    resultWrap.innerHTML += `<p>${item} </p> `;
+                });
+            })
+
+    }
+</script>
+
+</html>

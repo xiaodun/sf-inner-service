@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>websocket exercise</title>
+    <style>
+
+    </style>
+</head>
+
+<body>
+    <div class="input-wrap">
+        <input type="number" placeholder="Enter a number" autofocus style="width: 300px;" id="numberInput" />
+        <button onclick="onSend()">Send</button>
+    </div>
+    <h3>Return information</h3>
+    <div style="margin: 20px;" id="resultWrap">
+
+    </div>
+</body>
+<script>
+    const resultWrap = document.getElementById("resultWrap");
+    const numberInput = document.getElementById("numberInput");
+    //server address
+    var ws = new WebSocket("ws://127.0.0.1:8092");
+
+    ws.onopen = function (evt) {
+        resultWrap.innerHTML += `<p>Successful connection to server</p>`
+    };
+
+    ws.onmessage = function (evt) {
+
+        resultWrap.innerHTML += `<p>${evt.data}</p>`
+    };
+
+
+    function onSend() {
+
+        if (!numberInput.value) {
+            return;
+        }
+        ws.send(JSON.stringify({
+            value: numberInput.value,
+            type: "MATH"
+        }))
+        numberInput.value = "";
+
+    }
+
+
+</script>
+
+</html>

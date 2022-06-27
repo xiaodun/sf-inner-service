@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>The specified file is opened in vscode</title>
+    <style>
+
+    </style>
+</head>
+
+<body>
+    <div class="input-wrap">
+        <input placeholder="input file path" autofocus style="width: 300px;" id="fileInput" />
+        <button onclick="onOpen()">Open</button>
+    </div>
+</body>
+<script>
+    const fileInput = document.getElementById("fileInput");
+    //server address
+    const serviceUrl = "http://127.0.0.1:8091";
+    const commonUrl = `${serviceUrl}/api/base`
+
+    function onOpen() {
+
+        if (!fileInput.value) {
+            return;
+        }
+        fetch(commonUrl + `/openInVscode`, {
+
+            method: "post",
+            body: JSON.stringify({
+                filePath: fileInput.value
+            }),
+            headers: {
+                "content-type": "application/json",
+            },
+        })
+
+    }
+
+
+</script>
+
+</html>
