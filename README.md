@@ -1,5 +1,5 @@
 
-[**中文**](https://github.com/xiaodun/sf-inner-service) | [English](https://github.com/xiaodun/sf-inner-service/blob/master/README.md)
+[**中文**](https://github.com/xiaodun/sf-inner-service) | [<span style="color:#111">English</span>](https://github.com/xiaodun/sf-inner-service/blob/master/README.md)
 
 sf-inner-service 是以 npm 包存在项目里的小型内置服务器,它将对以下人群产生帮助作用:
 
