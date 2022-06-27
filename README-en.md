@@ -30,10 +30,10 @@ sf-inner-service is based on node.js, and it is more than enough to realize one-
 
 # Install
 
-````
+```
     npm install --save-dev sf-inner-service
 
-````
+```
 
 # tutorial
 
@@ -75,7 +75,7 @@ The json file tends to be more convenient for data display, viewing, reading and
 
 Do the following in the `ajaxInterceptor` interceptor of the global life cycle file lifeCycle.js, the file will be created automatically
 
-````
+```
 (function () {
   return function () {
     return {
@@ -96,7 +96,7 @@ Do the following in the `ajaxInterceptor` interceptor of the global life cycle f
     };
   };
 })();
-````
+```
 
 The judgment logic of `external.isLocal` is whether the hostname of the request source is one of `127.0.0.1` or `localhost`
 
@@ -104,7 +104,7 @@ The judgment logic of `external.isLocal` is whether the hostname of the request 
 
 Take `/api/book/save` as an example, the corresponding file level is api=>book=>book=>save.js, you can add a lifeCycle under the book (the second book, module name) folder. js file, an example is as follows:
 
-````
+```
 (function () {
   return function () {
     return {
@@ -117,13 +117,13 @@ Take `/api/book/save` as an example, the corresponding file level is api=>book=>
     };
   };
 })();
-````
+```
 
 The application-level lifeCycle.js file will be read once before each execution of the backend script, `external` can be received in the script file through the third parameter
 
 list.js code is as follows
 
-````
+```
 (function () {
   return function (argData, argParams, external) {
     console.log(external.count++);
@@ -139,4 +139,8 @@ list.js code is as follows
 })();
 
 
-````
+```
+
+For every dollar you get in sponsorship, the author who is coding late at night loses a hair.
+
+![](./images/zfb.png)
