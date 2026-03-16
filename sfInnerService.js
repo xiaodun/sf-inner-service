@@ -12,6 +12,12 @@ exports.start = function (config) {
   var os = require("os");
   var formidable_os = require("formidable");
   var WebSocketServer = require("ws").Server;
+  
+  var wsClients = new Map();
+  
+  function generateClientId() {
+    return 'ws_' + Date.now().toString(36) + '_' + Math.random().toString(36).substr(2, 9);
+  }
   //动态的获取本机IP地址
   let network = os.networkInterfaces();
   for (let key in network) {
@@ -47,11 +53,18 @@ exports.start = function (config) {
         }
 
         wss.on("connection", function (ws) {
+          var clientId = generateClientId();
+          wsClients.set(clientId, ws);
+          console.log(`WebSocket client connected, clientId: ${clientId}, total: ${wsClients.size}`);
+          
+          ws.on("close", function () {
+            wsClients.delete(clientId);
+            console.log(`WebSocket client disconnected, clientId: ${clientId}, total: ${wsClients.size}`);
+          });
+          
           ws.on("message", function (message) {
             let websocketjs = file_os.readFileSync(websocketPath, "utf-8");
-            // 广播消息
             let result = eval(websocketjs)(JSON.parse(message));
-
             ws.send(JSON.stringify(result));
           });
         });
@@ -105,6 +118,20 @@ exports.start = function (config) {
         isLocal,
         request,
         response,
+        broadcast: function(data) {
+          wsClients.forEach(function(client) {
+            if (client.readyState === 1) {
+              client.send(JSON.stringify(data));
+            }
+          });
+        },
+        broadcastToOthers: function(data, excludeWs) {
+          wsClients.forEach(function(client) {
+            if (client !== excludeWs && client.readyState === 1) {
+              client.send(JSON.stringify(data));
+            }
+          });
+        }
       };
 
       let floderPathArr = [].concat([
@@ -392,6 +419,16 @@ exports.start = function (config) {
               return;
             }
           }
+          
+          // 检查是否需要广播
+          if (result.broadcast) {
+            if (result.broadcast.type === "all") {
+              external.broadcast(result.broadcast.data);
+            } else if (result.broadcast.type === "others") {
+              external.broadcastToOthers(result.broadcast.data);
+            }
+          }
+          
           //返回结果
           response.writeHead(result.response.code, {
             "Content-Type": "application/json",
