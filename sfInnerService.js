@@ -419,9 +419,9 @@ exports.start = function (config) {
               return;
             }
           }
-          
           // 检查是否需要广播
           if (result.broadcast) {
+            console.log("[ws-broadcast]", appName, dataName, result.broadcast.type, result.broadcast.data && result.broadcast.data.type);
             if (result.broadcast.type === "all") {
               external.broadcast(result.broadcast.data);
             } else if (result.broadcast.type === "others") {

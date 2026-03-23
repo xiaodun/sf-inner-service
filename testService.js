@@ -1,10 +1,10 @@
 var Service = require("./sfInnerService.js");
 Service.start({
   prefix: "api",
-  port: 8091,
+  port: 8880,
   dataFloderName: "data",
   isOpenWebSocket: true,
   webSocket: {
-    port: 8092,
+    port: 8881,
   },
 });
