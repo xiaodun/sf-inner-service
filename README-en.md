@@ -65,6 +65,8 @@ Under the tutorial-en, for those with html files, just execute `node testService
 
 [10.Realize_the_video_playing_side-by-side](https://github.com/xiaodun/sf-inner-service/blob/master/tutorial-en/10.Realize_the_video_playing_side-by-side/10a.md)
 
+[11.WebSocket_broadcast](https://github.com/xiaodun/sf-inner-service/blob/master/tutorial-en/11.WebSocket_broadcast/11a.md)
+
 # common problem
 
 ## Why use json instead of JS for data files
